@@ -1,0 +1,30 @@
+<link rel="stylesheet" href="controls.css">
+<div class="controls">
+    <button id="up">UP</button>
+    <div id="middle">
+        <button id="left">LEFT</button>
+        <button id="right">RIGHT</button>
+    </div>
+    <button id="down">DOWN</button>
+</div>
+
+
+<script>
+    const upButton = document.getElementById("up")
+    const downButton = document.getElementById("down")
+    const rightButton = document.getElementById("right")
+    const leftButton = document.getElementById("left")
+    const connectionUrl = "http://localhost:"
+    const port = 3000
+
+    upButton.addEventListener("click", emitDirection)
+    downButton.addEventListener("click", emitDirection)
+    rightButton.addEventListener("click", emitDirection)
+    leftButton.addEventListener("click", emitDirection)
+    
+    function emitDirection (e){
+        const direction = e.path[0].id
+        fetch(connectionUrl + port + "/" + direction)
+    }
+
+</script>
