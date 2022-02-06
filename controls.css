@@ -1,3 +1,17 @@
+html, body {
+    margin: 0; 
+    height: 100%; 
+    overflow: hidden
+}
+
+.submit{
+    height: 3rem;
+}
+
+.submit-button{
+    height: 3rem;
+}
+
 .controls{
     height: 60rem;
     display: flex;
@@ -11,9 +25,9 @@
 }
 
 button {
-    font-size: 4rem;
-    width: 20rem;
-    height: 20rem;
+    font-size: 2rem;
+    width: 10rem;
+    height: 10rem;
 }
 
 @media screen and (max-width: 768px) {
