@@ -1,8 +1,9 @@
 const piblaster = require("pi-blaster.js")
+piblaster.setPwm(17, 0.8)
 
-setInterval(() => {
-    piblaster.setPwm(17, 0.8)
-}, 2);
+setTimeout(()=>{
+    piblaster.setPwm(17, 0)
+},2)
 
 
 
