@@ -42,7 +42,7 @@ app.get("/hello", (req, res)=>{
         }
 
 
-    },2000)
+    },1000)
 })
 
 app.listen(PORT, ()=>console.log("app listening: ", PORT))
