@@ -25,14 +25,17 @@ app.get("/left",(req, res) => {
 })
 
 app.get("/hello", (req, res)=>{
+    console.log("executing hello protocol")
     let times = 0
 
     const interval = setInterval(()=>{
         
         if(times > 7){
-            piblaster.setPwm(17, 0.06)
-            res.send("done")
             clearInterval(interval)
+            setTimeout(()=>{
+                piblaster.setPwm(17, 0.06)
+            }, 1000)
+            res.send("done")
         }
         
         if(times % 2 === 0){
@@ -40,7 +43,7 @@ app.get("/hello", (req, res)=>{
         } else {
             piblaster.setPwm(17, 0.195)
         }
-        
+
         times ++
     },1000)
 })
