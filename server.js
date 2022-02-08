@@ -7,23 +7,37 @@ const PORT = process.env.PORT || 3000;
 app.use(cors())
 
 app.get("/up",(req, res) => {
-    console.log("up command recived")
-    res.send("robot moving up")
     piblaster.setPwm(17, 0.06)
+    res.send("robot moving up")
 })
 app.get("/down",(req, res) => {
-    console.log("down command recived")
-    res.send("robot moving down")
     piblaster.setPwm(17, 0.24)
+    res.send("robot moving down")
 })
 app.get("/right",(req, res) => {
-    console.log("right command recived")
-    res.send("robot moving right")
     piblaster.setPwm(17, 0.15)
+    res.send("robot moving right")
 })
 app.get("/left",(req, res) => {
-    console.log("left command recived")
-    res.send("robot moving left")
+    console.log("no left commnad yet")
+    res.send("robot cannot move like this at the moment")
+})
+
+app.get("/hello", (req, res)=>{
+    let times = 0
+    const interval = setInterval(()=>{
+        if(times > 7){
+            clearInterval(interval)
+        }
+        if(times % 2 === 2){
+            piblaster.setPwm(17, 0.06)
+        } else {
+            piblaster.setPwm(17, 0.24)
+        }
+        times ++
+
+
+    },1000)
 })
 
 app.listen(PORT, ()=>console.log("app listening: ", PORT))

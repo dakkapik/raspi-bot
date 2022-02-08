@@ -4,7 +4,7 @@
 <body>
     <input class="submit" id="submit">
     <button class="submit-button" id="submit-button">SUBMIT</button>
-
+    <button id="say-hello">Say Hello</button>
     <div class="controls">
         <button id="up">UP</button>
         <div id="middle">
@@ -24,6 +24,7 @@
     const downButton = document.getElementById("down")
     const rightButton = document.getElementById("right")
     const leftButton = document.getElementById("left")
+    const sayHelloButton = document.getElementById("say-hello")
 
     const http = "http://"
     let connectionIP = "localhost"
@@ -34,10 +35,15 @@
     rightButton.addEventListener("click", emitDirection)
     leftButton.addEventListener("click", emitDirection)
     submitButton.addEventListener("click", setConnection)
+    sayHelloButton.addEventListener("click", emitHello)
 
     function emitDirection (e){
         const direction = e.path[0].id
         fetch(http + connectionIP + ":" + port + "/" + direction)
+    }
+
+    function emitHello (e) {
+        fetch(http + connectionIP + ":" + port + "/" + "hello")
     }
 
     function setConnection (e){
