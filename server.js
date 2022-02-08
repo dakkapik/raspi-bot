@@ -28,22 +28,20 @@ app.get("/hello", (req, res)=>{
     let times = 0
 
     const interval = setInterval(()=>{
-        times ++
-        console.log(times % 2)
-
+        
         if(times > 7){
             piblaster.setPwm(17, 0.06)
             res.send("done")
             clearInterval(interval)
         }
-
+        
         if(times % 2 === 0){
-            console.log("move up")
             piblaster.setPwm(17, 0.115)
         } else {
-            console.log("move down")
             piblaster.setPwm(17, 0.195)
         }
+        
+        times ++
     },1000)
 })
 
