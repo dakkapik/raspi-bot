@@ -45,7 +45,7 @@ app.get("/hello", (req, res)=>{
         }
 
         times ++
-    },400)
+    },200)
 })
 
 app.listen(PORT, ()=>{
