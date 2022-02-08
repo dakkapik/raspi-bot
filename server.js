@@ -31,6 +31,7 @@ app.get("/hello", (req, res)=>{
 
         if(times > 7){
             clearInterval(interval)
+            res.send("done")
         }
 
         if(times % 2 === 0){
