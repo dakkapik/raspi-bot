@@ -33,7 +33,7 @@ app.get("/hello", (req, res)=>{
             clearInterval(interval)
         }
 
-        if(times % 2 === 2){
+        if(times % 2 === 0){
             console.log("move up")
             piblaster.setPwm(17, 0.06)
         } else {
