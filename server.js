@@ -26,9 +26,13 @@ app.get("/left",(req, res) => {
 app.get("/hello", (req, res)=>{
     let times = 0
     const interval = setInterval(()=>{
+        times ++
+        console.log(times % 2)
+
         if(times > 7){
             clearInterval(interval)
         }
+
         if(times % 2 === 2){
             console.log("move up")
             piblaster.setPwm(17, 0.06)
@@ -36,10 +40,9 @@ app.get("/hello", (req, res)=>{
             console.log("move down")
             piblaster.setPwm(17, 0.24)
         }
-        times ++
 
 
-    },1000)
+    },2000)
 })
 
 app.listen(PORT, ()=>console.log("app listening: ", PORT))
