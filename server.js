@@ -25,7 +25,7 @@ app.get("/left",(req, res) => {
 })
 
 app.get("/hello", (req, res)=>{
-    console.log("executing hello protocol")
+    console.log("executing greeting protocol")
     let times = 0
 
     const interval = setInterval(()=>{
