@@ -33,7 +33,7 @@ app.get("/hello", (req, res)=>{
 
         if(times > 7){
             clearInterval(interval)
-            piblaster(17, 0.06)
+            piblaster.setPwm(17, 0.06)
             res.send("done")
         }
 
