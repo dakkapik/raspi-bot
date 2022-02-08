@@ -30,8 +30,10 @@ app.get("/hello", (req, res)=>{
             clearInterval(interval)
         }
         if(times % 2 === 2){
+            console.log("move up")
             piblaster.setPwm(17, 0.06)
         } else {
+            console.log("move down")
             piblaster.setPwm(17, 0.24)
         }
         times ++
