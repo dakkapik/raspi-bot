@@ -34,7 +34,7 @@ app.get("/hello", (req, res)=>{
             clearInterval(interval)
             setTimeout(()=>{
                 piblaster.setPwm(17, 0.06)
-            }, 1000)
+            }, 200)
             res.send("done")
         }
         
