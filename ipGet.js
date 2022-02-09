@@ -17,8 +17,8 @@ function getIp(){
             }
         }
     }
+    console.log("IP:", results)
     return results
 }
 
 module.exports = getIp
-console.log(results)

@@ -1,11 +1,18 @@
 const express = require("express");
 const cors = require("cors")
+const path = require("path")
 const ipGet = require("./ipGet")
 const app = express();
-const piblaster = require("pi-blaster.js")
+let piblaster 
+if(process.platform === 'linux') piblaster = require("pi-blaster.js")
 const PORT = process.env.PORT || 3000;
 
+app.use(express.static(path.join(__dirname, "/controls")))
 app.use(cors())
+
+app.get("/", (req,res)=> {
+    res.sendFile(path.join(__dirname, "/controls/controls.html"))
+})
 
 app.get("/up",(req, res) => {
     piblaster.setPwm(17, 0.15)
@@ -50,6 +57,5 @@ app.get("/hello", (req, res)=>{
 
 app.listen(PORT, ()=>{
     console.log("app listening: " + PORT)
-    console.log("IP: ", ipGet())
     console.log("\n")
 })
