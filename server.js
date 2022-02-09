@@ -30,7 +30,7 @@ app.get("/hello", (req, res)=>{
 
     const interval = setInterval(()=>{
         
-        if(times > 7){
+        if(times > 9){
             clearInterval(interval)
             setTimeout(()=>{
                 piblaster.setPwm(17, 0.06)
