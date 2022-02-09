@@ -8,19 +8,19 @@ const PORT = process.env.PORT || 3000;
 app.use(cors())
 
 app.get("/up",(req, res) => {
-    piblaster.setPwm(17, 0.06)
+    piblaster.setPwm(17, 0.15)
     res.send("robot moving up")
 })
 app.get("/down",(req, res) => {
-    piblaster.setPwm(17, 0.24)
+    console.log("no left commnad yet")
     res.send("robot moving down")
 })
 app.get("/right",(req, res) => {
-    piblaster.setPwm(17, 0.15)
+    piblaster.setPwm(17, 0.06)
     res.send("robot moving right")
 })
 app.get("/left",(req, res) => {
-    console.log("no left commnad yet")
+    piblaster.setPwm(17, 0.24)
     res.send("robot cannot move like this at the moment")
 })
 
