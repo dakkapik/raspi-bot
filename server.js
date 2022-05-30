@@ -10,6 +10,12 @@ const PORT = process.env.PORT || 3000;
 app.use(express.static(path.join(__dirname, "/controls")))
 app.use(cors())
 
+let ip
+if(process.platform === "linux") ip = ipGet()["wlan0"][0]
+// if(process.platform === 'win32') ip = ipGet()["Wi-Fi"][0]
+if(process.platform === 'win32') ip = ipGet()["Ethernet"][0]
+
+
 app.get("/", (req,res)=> {
     res.sendFile(path.join(__dirname, "/controls/controls.html"))
 })
@@ -56,6 +62,7 @@ app.get("/hello", (req, res)=>{
 })
 
 app.listen(PORT, ()=>{
+    console.log("IP: ", ip)
     console.log("app listening: " + PORT)
     console.log("\n")
 })
