@@ -1,6 +1,6 @@
 module.exports = (io) => {
     let piblaster
-    const ratio = 0.18 / 605
+    const ratio = 180 / 605
 
     if(process.platform === 'linux') piblaster = require("pi-blaster.js")
 
@@ -12,8 +12,7 @@ module.exports = (io) => {
         })
 
         socket.on("canvas-pos", (pos) => {
-            piblaster.setPwm(4, pos.x * ratio + 0.6)
-            console.log(pos)
+            piblaster.setPwm(4, (pos.x * ratio) / 1000 + 0.06)
         })
 
     });
