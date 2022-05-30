@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
-const ipGet = require("./ipGet");
+const ipGet = require("../util/ipGet");
 const app = express();
 let piblaster 
 if(process.platform === 'linux') piblaster = require("pi-blaster.js")

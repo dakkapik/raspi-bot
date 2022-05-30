@@ -4,16 +4,19 @@ module.exports = (io) => {
 
     if(process.platform === 'linux') piblaster = require("pi-blaster.js")
 
-
     io.on("connection", (socket) => {
 
         socket.on("purpose", (purpose) => {
-            console.log("> ", purpose)
+            console.log("> client: ", purpose)
         })
 
         socket.on("canvas-pos", (pos) => {
-            piblaster.setPwm(4, (pos.x * ratio) / 1000 + 0.06)
-            piblaster.setPwm(17, (pos.y * ratio) / 1000 + 0.06)
+            if(piblaster) {
+                piblaster.setPwm(4, (pos.x * ratio) / 1000 + 0.06)
+                piblaster.setPwm(17, (pos.y * ratio) / 1000 + 0.06)
+            } else {
+                console.log(pos)
+            }
         })
 
     });

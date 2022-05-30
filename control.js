@@ -1,4 +1,4 @@
-const ipGet = require("./ipGet");
+const ipGet = require("./util/ipGet");
 const port = process.env.PORT || 5000;
 
 const express = require("express");
@@ -16,8 +16,8 @@ if(process.platform === "linux") ip = ipGet()["wlan0"][0]
 // if(process.platform === 'win32') ip = ipGet()["Wi-Fi"][0]
 if(process.platform === 'win32') ip = ipGet()["Ethernet"][0]
 
-app.get("/", (req,res)=> {
-    res.sendFile(__dirname + '/public/controlX.html')
+app.get("/", (req, res)=> {
+    res.sendFile(__dirname + '/public/control.html')
 })
 
 require("./socket")(io)
