@@ -12,7 +12,7 @@ module.exports = (io) => {
         })
 
         socket.on("canvas-pos", (pos) => {
-            piblaster.setPwm(4, pos.x * ration + 0.6)
+            piblaster.setPwm(4, pos.x * ratio + 0.6)
             console.log(pos)
         })
 
