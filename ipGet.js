@@ -17,7 +17,6 @@ function getIp(){
             }
         }
     }
-    console.log("IP:", results)
     return results
 }
 

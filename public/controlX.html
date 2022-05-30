@@ -22,7 +22,7 @@
     
     const socket = io(domain.origin);
     socket.on("connect", () => {
-        socket.emit("purpose", "slider")
+        socket.emit("purpose", "mouse-controller")
     })
 
     
