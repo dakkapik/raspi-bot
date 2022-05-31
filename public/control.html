@@ -33,23 +33,15 @@
     const c = canvas.getContext("2d")
     canvas.width = 600
     canvas.height = 600
-    let mouseDown = false
+    let control = false
     
-    canvas.addEventListener("mousedown", () =>{
-        mouseDown = true
-        console.log(mouseDown)
-    })
-
-    canvas.addEventListener("mouseup", () => {
-        mouseDown = false
-        console.log(mouseDown)
-    })
+    canvas.addEventListener("click", () => control = !control)
 
     animate()
     function animate () {
         window.requestAnimationFrame(animate)
 
-        if(mouseDown) {
+        if(control) {
             canvas.addEventListener("mousemove", emitMousePos)
         } else {
             canvas.removeEventListener("mousemove", emitMousePos)
