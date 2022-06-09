@@ -15,6 +15,7 @@
     </style>
 </head>
 <body>
+    <h4 id="raw-input"></h4>
     <canvas></canvas>
     <h1 id="x-axis"></h1>
     <h1 id="y-axis"></h1>
@@ -30,11 +31,12 @@
     })
 </script>
 <script>
-    const list = document.querySelector("ul")
     const canvas = document.querySelector("canvas")
+    const rawInput = document.getElementById("raw-input")
     const xAxis = document.getElementById("x-axis")
     const yAxis = document.getElementById("y-axis")
     const zAxis = document.getElementById("z-axis")
+
     const xDisplayPos = {x: 5, w: 20}
     const yDisplayPos = {x: 30, w: 20}
     const zDisplayPos = {x: 55, w :20}
@@ -51,6 +53,8 @@
     const G_MULTI = 10
 
     socket.on("giro-output", (data) => {
+        console.log(data)
+        rawInput.innerHTML = `X: ${data.Gx} Y: ${data.Gy} Z: ${data.Gz}`
         drawValues(data)
         updateGiroPos(data)
     })

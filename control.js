@@ -20,9 +20,15 @@ app.get("/", (req, res)=> {
     res.sendFile(__dirname + '/public/control.html')
 })
 
-app.get("/giro", (req, res)=> {
-    res.sendFile(__dirname + '/public/giro.html')
+app.get("/gyro", (req, res)=> {
+    res.sendFile(__dirname + '/public/gyro.html')
 })
+
+app.get("/turret-mock", (req, res)=> {
+    res.sendFile(__dirname + '/public/turret-mock.html')
+})
+
+
 
 require("./socket")(io)
 
