@@ -13,11 +13,15 @@ app.use(express.static("public"))
 
 let ip
 if(process.platform === "linux") ip = ipGet()["wlan0"][0]
-// if(process.platform === 'win32') ip = ipGet()["Wi-Fi"][0]
-if(process.platform === 'win32') ip = ipGet()["Ethernet"][0]
+if(process.platform === 'win32') ip = ipGet()["Wi-Fi"][0]
+// if(process.platform === 'win32') ip = ipGet()["Ethernet"][0]
 
 app.get("/", (req, res)=> {
     res.sendFile(__dirname + '/public/control.html')
+})
+
+app.get("/giro", (req, res)=> {
+    res.sendFile(__dirname + '/public/giro.html')
 })
 
 require("./socket")(io)

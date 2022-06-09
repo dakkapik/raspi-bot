@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giro</title>
+    <style>
+        html, body {
+            box-sizing: border-box;
+        }
+        canvas {
+            border-style: solid;
+        }
+    </style>
+</head>
+<body>
+    <canvas></canvas>
+    <h1 id="x-axis"></h1>
+    <h1 id="y-axis"></h1>
+    <h1 id="z-axis"></h1>
+</body>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const domain = (new URL(window.location.href));
+    const socket = io(domain.origin);
+    
+    socket.on("connect", () => {
+        socket.emit("purpose", "giro-display")
+    })
+</script>
+<script>
+    const list = document.querySelector("ul")
+    const canvas = document.querySelector("canvas")
+    const xAxis = document.getElementById("x-axis")
+    const yAxis = document.getElementById("y-axis")
+    const zAxis = document.getElementById("z-axis")
+    const xDisplayPos = {x: 5, w: 20}
+    const yDisplayPos = {x: 30, w: 20}
+    const zDisplayPos = {x: 55, w :20}
+    canvas.height = 600
+    canvas.width = 600
+    const c = canvas.getContext("2d")
+    let x = 0
+    let y = 0
+    let z = 0
+    let xNoice = undefined
+    let yNoice = undefined
+    let zNoice = undefined
+    const NOICE_MULTIPLIER = 1.5
+    const G_MULTI = 10
+
+    socket.on("giro-output", (data) => {
+        drawValues(data)
+        updateGiroPos(data)
+    })
+
+    function updateGiroPos(values) {
+        if(xNoice === undefined) updateNoiceTresshold('x', values.Gx)
+        if(yNoice === undefined) updateNoiceTresshold('y', values.Gy)
+        if(zNoice === undefined) updateNoiceTresshold('z', values.Gz)
+        
+        if(Math.abs(values.Gx) > xNoice) x += values.Gx;
+        if(Math.abs(values.Gy) > yNoice) y += values.Gy;
+        if(Math.abs(values.Gz) > zNoice) z += values.Gz;
+
+        updateGiroPosDisplay(x, y, z)
+        drawTresshold("x", xNoice)
+        drawTresshold("y", yNoice)
+        drawTresshold("z", zNoice)
+    }
+
+    function updateNoiceTresshold(axis, v) {
+        const value = Math.abs(v)
+        const noice = value * NOICE_MULTIPLIER
+        switch( axis ){
+            case "x":
+                xNoice = noice
+            break;
+            case "y":
+                yNoice = noice
+            break;
+            case "z":
+                zNoice = noice * 2
+            break;
+        }
+    }
+
+    function drawTresshold(axis, value) {
+        c.strokeStyle = "red"
+        switch( axis ){
+            case "x":
+                c.beginPath()
+                c.moveTo(xDisplayPos.x, (value *G_MULTI) + canvas.height / 2)
+                c.lineTo(xDisplayPos.x + xDisplayPos.w, (value *G_MULTI) + canvas.height / 2)
+                c.moveTo(xDisplayPos.x, (-value *G_MULTI) + canvas.height / 2)
+                c.lineTo(xDisplayPos.x + xDisplayPos.w, (-value *G_MULTI) + canvas.height / 2)
+                c.stroke()
+            break;
+            case "y":
+            c.beginPath()
+                c.moveTo(yDisplayPos.x, (value *G_MULTI) + canvas.height / 2)
+                c.lineTo(yDisplayPos.x + yDisplayPos.w, (value *G_MULTI) + canvas.height / 2)
+                c.moveTo(yDisplayPos.x, (-value *G_MULTI) + canvas.height / 2)
+                c.lineTo(yDisplayPos.x + yDisplayPos.w, (-value *G_MULTI) + canvas.height / 2)
+                c.stroke()
+            break;
+            case "z":
+                c.beginPath()
+                c.moveTo(zDisplayPos.x, (value *G_MULTI) + canvas.height / 2)
+                c.lineTo(zDisplayPos.x + zDisplayPos.w, (value *G_MULTI) + canvas.height / 2)
+                c.moveTo(zDisplayPos.x, (-value *G_MULTI) + canvas.height / 2)
+                c.lineTo(zDisplayPos.x + zDisplayPos.w, (-value *G_MULTI) + canvas.height / 2)
+                c.stroke()
+            break;
+        }
+    }
+
+    function updateGiroPosDisplay (x, y, z) {
+        xAxis.innerHTML = "X Axis: " + x;
+        yAxis.innerHTML = "Y Axis: " + y;
+        zAxis.innerHTML = "Z Axis: " + z;
+    }
+
+    function drawValues(values) {
+        const {Gx, Gy, Gz, Ax, Ay, Az} = values
+        c.fillStyle = "white"
+        c.fillRect(0,0,canvas.width, canvas.height)
+        
+        c.fillStyle = "black"
+        c.fillRect(5, canvas.height / 2, xDisplayPos.w, Gx * G_MULTI)
+        c.fillRect(30, canvas.height / 2, yDisplayPos.w, Gy * G_MULTI)
+        c.fillRect(55, canvas.height / 2, zDisplayPos.w, Gz * G_MULTI)
+
+        c.fillStyle = "red"
+        c.fillRect(70 + 5, canvas.height / 2, 20, Ax*G_MULTI)
+        c.fillRect(70 + 30, canvas.height / 2, 20, Ay*G_MULTI)
+        c.fillRect(70 + 55, canvas.height / 2, 20, Az*G_MULTI)
+    }
+
+    function removeAllChildNodes(parent) {
+        while (parent.firstChild) {
+            parent.removeChild(parent.firstChild);
+        }
+    }
+</script>
+</html>
