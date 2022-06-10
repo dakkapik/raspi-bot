@@ -5,14 +5,17 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>turret mock</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100&display=swap');
+        html,body {
+            font-family: 'Roboto', sans-serif;
+        }
+    </style>
 </head>
 <body>
-    <h1 id="x-axis-t"></h1>
-    <h1 id="y-axis-t"></h1>
-    <h1 id="x-axis-g"></h1>
-    <h1 id="y-axis-g"></h1>
-    <h1 id="x-tresshold"></h1>
-    <h1 id="y-tresshold"></h1>
+    <div id="turret-display"></div>
+    <div id="gyro-display"></div>
+    <div id="tresshold-display"></div>
 </body>
 <script src="/socket.io/socket.io.js"></script>
 <script>
@@ -22,24 +25,37 @@
     socket.on("connect", () => socket.emit("purpose", "turret-mock"))
 </script>
 <script>
-    const turretX = document.getElementById("x-axis-t")
-    const turretY = document.getElementById("y-axis-t")
-    const gyroX = document.getElementById("x-axis-g")
-    const gyroY = document.getElementById("y-axis-g")
-    const tressholdX = document.getElementById("x-tresshold")
-    const tressholdY = document.getElementById("y-tresshold")
+    const turretDis = document.getElementById("turret-display")
+    const gyroDis = document.getElementById("gyro-display")
+    const tressholdDis = document.getElementById("tresshold-display")
 
-    socket.on("turret-pos", (pos) => {
-        console.log(pos)
-        turretX.innerHTML = "turret X: " + pos.x
-        turretY.innerHTML = "turret Y: " + pos.y
+    socket.on("turret-pos", (turretPos) => {
+        removeAllChildNodes(turretDis)
+        Object.entries(turretPos).forEach(([key, value]) => {
+            const item = document.createElement("h4")
+            item.innerHTML = `${key}: ${value}`
+            turretDis.append(item)
+        })
     })
     socket.on("meta-data", (gyroPos, tresshold) => {
-        console.log("giro-pos")
-        gyroX.innerHTML = "gyro X: " + gyroPos.x
-        gyroY.innerHTML = "gyro Y: " + gyroPos.y
-        tressholdX.innerHTML = "tresshold X: " + tresshold.x
-        tressholdY.innerHTML = "tresshold Y: " + tresshold.y
+        removeAllChildNodes(gyroDis)
+        removeAllChildNodes(tressholdDis)
+        Object.entries(gyroPos).forEach(([key, value]) => {
+            const item = document.createElement("h4")
+            item.innerHTML = `${key}: ${value}`
+            gyroDis.append(item)
+        })
+        Object.entries(tresshold).forEach(([key, value]) => {
+            const item = document.createElement("h4")
+            item.innerHTML = `${key}: ${value}`
+            tressholdDis.append(item)
+        })
     })
+
+    function removeAllChildNodes(parent) {
+        while (parent.firstChild) {
+            parent.removeChild(parent.firstChild);
+        }
+    }
 </script>
 </html>
