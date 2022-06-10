@@ -51,7 +51,7 @@
 
     function emitMousePos (e) {
         const mousePos =  getMousePos(canvas, e)
-        socket.emit("canvas-pos", mousePos)
+        socket.emit("mouse-pos", mousePos)
         traceMouse(mousePos)
         displayCoords(mousePos)
     }
