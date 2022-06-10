@@ -17,13 +17,14 @@ if(process.platform === 'win32') ip = ipGet()["Wi-Fi"][0]
 // if(process.platform === 'win32') ip = ipGet()["Ethernet"][0]
 
 app.get("/", (req, res)=> {
-    res.sendFile(__dirname + '/public/control.html')
+    res.sendFile(__dirname + '/public/index.html')
 })
-
+app.get("/mouse-control", (req, res)=> {
+    res.sendFile(__dirname + '/public/mouse-control.html')
+})
 app.get("/gyro", (req, res)=> {
     res.sendFile(__dirname + '/public/gyro.html')
 })
-
 app.get("/turret-mock", (req, res)=> {
     res.sendFile(__dirname + '/public/turret-mock.html')
 })
