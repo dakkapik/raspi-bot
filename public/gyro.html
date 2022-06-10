@@ -32,115 +32,106 @@
 </script>
 <script>
     const canvas = document.querySelector("canvas")
+    canvas.height = 600
+    canvas.width = 600
+    const c = canvas.getContext("2d")
     const rawInput = document.getElementById("raw-input")
     const xAxis = document.getElementById("x-axis")
     const yAxis = document.getElementById("y-axis")
     const zAxis = document.getElementById("z-axis")
+</script>
+<script>
+    class Gage {
+        constructor (name, index, fillColor = "black", tressholdColor = "red") {
+            this.visualMultiplier = 1
+            this.fColor = fillColor
+            this.tColor = tressholdColor
+            this.name = name
+            this.value = 0
+            this.tresshold = 0
+            this.width = 80
+            this.x = index * this.width
+            this.y = canvas.width / 2
+            this.font = "20px Arial"
+        } 
 
-    const xDisplayPos = {x: 5, w: 20}
-    const yDisplayPos = {x: 30, w: 20}
-    const zDisplayPos = {x: 55, w :20}
-    canvas.height = 600
-    canvas.width = 600
-    const c = canvas.getContext("2d")
-    let x = 0
-    let y = 0
-    let z = 0
-    let xNoice = undefined
-    let yNoice = undefined
-    let zNoice = undefined
-    const NOICE_MULTIPLIER = 1.5
-    const G_MULTI = 10
+        setTresshold = ( value ) => this.tresshold = value * this.visualMultiplier;
 
-    socket.on("giro-output", (data) => {
-        console.log(data)
-        rawInput.innerHTML = `X: ${data.Gx} Y: ${data.Gy} Z: ${data.Gz}`
+        updateValue = ( value ) => {
+            this.value = value * this.visualMultiplier
+            this.drawGage()
+            this.drawName()
+            this.drawTresshold()
+        }
+
+        drawGage () {
+            c.fillStyle = this.fColor;
+            c.fillRect(this.x, this.y, this.width, this.value);
+        }
+
+        drawTresshold() {
+            c.strokeStyle = this.tColor;
+            c.beginPath()
+            c.moveTo(this.x, this.y + this.tresshold * this.visualMultiplier)
+            c.lineTo(this.x  + this.width, this.y + this.tresshold * this.visualMultiplier)
+            c.moveTo(this.x,this.y - this.tresshold * this.visualMultiplier)
+            c.lineTo(this.x  + this.width, this.y +  this.tresshold * this.visualMultiplier)
+            c.stroke()
+        }
+
+        drawName() {
+            c.font = this.font;
+            c.fillText(this.name, this.x, 20)
+        }
+    }
+</script>
+<script>
+    
+    socket.on("raw-gyro-data", (data) => {
+        const { Gx, Gy, Gz, Ax, Ay, Az} = data
+        rawInput.innerHTML = `Gx: ${Gx} Gy: ${Gy} Gz: ${Gz} Ax: ${Ay} Ay: ${Ay} Az: ${Az}`
         drawValues(data)
         updateGiroPos(data)
     })
 
-    function updateGiroPos(values) {
-        if(xNoice === undefined) updateNoiceTresshold('x', values.Gx)
-        if(yNoice === undefined) updateNoiceTresshold('y', values.Gy)
-        if(zNoice === undefined) updateNoiceTresshold('z', values.Gz)
-        
-        if(Math.abs(values.Gx) > xNoice) x += values.Gx;
-        if(Math.abs(values.Gy) > yNoice) y += values.Gy;
-        if(Math.abs(values.Gz) > zNoice) z += values.Gz;
+    let tressholdSet = false
+    let gages = undefined
 
-        updateGiroPosDisplay(x, y, z)
-        drawTresshold("x", xNoice)
-        drawTresshold("y", yNoice)
-        drawTresshold("z", zNoice)
-    }
+    socket.on("gyro-state", state => {
+        if(gages === undefined) createGages( state.angles )
+        else {
+            c.fillStyle ="white"
+            c.fillRect(0,0, canvas.width, canvas.height)
 
-    function updateNoiceTresshold(axis, v) {
-        const value = Math.abs(v)
-        const noice = value * NOICE_MULTIPLIER
-        switch( axis ){
-            case "x":
-                xNoice = noice
-            break;
-            case "y":
-                yNoice = noice
-            break;
-            case "z":
-                zNoice = noice * 2
-            break;
+            Object.entries(state.angles).forEach(([key, value]) => {
+                gages[key].updateValue(value)
+            })
         }
-    }
 
-    function drawTresshold(axis, value) {
-        c.strokeStyle = "red"
-        switch( axis ){
-            case "x":
-                c.beginPath()
-                c.moveTo(xDisplayPos.x, (value *G_MULTI) + canvas.height / 2)
-                c.lineTo(xDisplayPos.x + xDisplayPos.w, (value *G_MULTI) + canvas.height / 2)
-                c.moveTo(xDisplayPos.x, (-value *G_MULTI) + canvas.height / 2)
-                c.lineTo(xDisplayPos.x + xDisplayPos.w, (-value *G_MULTI) + canvas.height / 2)
-                c.stroke()
-            break;
-            case "y":
-            c.beginPath()
-                c.moveTo(yDisplayPos.x, (value *G_MULTI) + canvas.height / 2)
-                c.lineTo(yDisplayPos.x + yDisplayPos.w, (value *G_MULTI) + canvas.height / 2)
-                c.moveTo(yDisplayPos.x, (-value *G_MULTI) + canvas.height / 2)
-                c.lineTo(yDisplayPos.x + yDisplayPos.w, (-value *G_MULTI) + canvas.height / 2)
-                c.stroke()
-            break;
-            case "z":
-                c.beginPath()
-                c.moveTo(zDisplayPos.x, (value *G_MULTI) + canvas.height / 2)
-                c.lineTo(zDisplayPos.x + zDisplayPos.w, (value *G_MULTI) + canvas.height / 2)
-                c.moveTo(zDisplayPos.x, (-value *G_MULTI) + canvas.height / 2)
-                c.lineTo(zDisplayPos.x + zDisplayPos.w, (-value *G_MULTI) + canvas.height / 2)
-                c.stroke()
-            break;
+        if(tressholdSet === false){
+            if(state.tresshold !== undefined){
+                // console.log(state.tresshold)
+                Object.entries(state.tresshold).forEach(([key, value]) => {
+                    gages[key].setTresshold(value)
+                })
+            }
         }
+    })
+
+    function createGages (state) {
+        gages = {}
+        Object.entries(state).forEach(([key,value], index) => {
+            const gage = new Gage(key, index)
+            gages[key] = gage;
+        })
+        console.log(gages)
     }
 
-    function updateGiroPosDisplay (x, y, z) {
-        xAxis.innerHTML = "X Axis: " + x;
-        yAxis.innerHTML = "Y Axis: " + y;
-        zAxis.innerHTML = "Z Axis: " + z;
-    }
-
-    function drawValues(values) {
-        const {Gx, Gy, Gz, Ax, Ay, Az} = values
-        c.fillStyle = "white"
-        c.fillRect(0,0,canvas.width, canvas.height)
-        
-        c.fillStyle = "black"
-        c.fillRect(5, canvas.height / 2, xDisplayPos.w, Gx * G_MULTI)
-        c.fillRect(30, canvas.height / 2, yDisplayPos.w, Gy * G_MULTI)
-        c.fillRect(55, canvas.height / 2, zDisplayPos.w, Gz * G_MULTI)
-
-        c.fillStyle = "red"
-        c.fillRect(70 + 5, canvas.height / 2, 20, Ax*G_MULTI)
-        c.fillRect(70 + 30, canvas.height / 2, 20, Ay*G_MULTI)
-        c.fillRect(70 + 55, canvas.height / 2, 20, Az*G_MULTI)
-    }
+    // function updateGiroPosDisplay (x, y, z) {
+    //     xAxis.innerHTML = "X Axis: " + x;
+    //     yAxis.innerHTML = "Y Axis: " + y;
+    //     zAxis.innerHTML = "Z Axis: " + z;
+    // }
 
     function removeAllChildNodes(parent) {
         while (parent.firstChild) {
