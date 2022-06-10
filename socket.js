@@ -1,57 +1,139 @@
-// const fs = require("fs")
 // piblaster 180 degree for servo is 0.06 - 0.24
 // initialization x would be 90 ==> 0.15
-const NOICE_MULTIPLIER = 2
-const turretPos = {x: 0.15, y: 0.06}
-const gyroPos = {x: 0.15, y: 0.06}
-const gyroNoice = {x: undefined, y: undefined}
+
+class Turret {
+    constructor () {
+        this.STARTING_CONST = {
+            X : 0.18,
+            Y : null,
+            Z : 0.18
+        }
+        this.angles = {
+            x : 0.18,
+            y : null,
+            z : 0.18
+        }
+        this.upperLimit = 0.24
+        this.lowerLimit = 0.06
+        this.translationRatio = 1000
+    }
+
+    changePos ({ x, y, z }) {
+
+        const nextPosX = this.STARTING_CONST.X + ( x / this.translationRatio )
+        if( nextPosX > this.upperLimit ){
+            console.log("> EXIDING UPPER LIMIT X")
+        } else if (nextPosX < this.lowerLimit){
+            console.log("> EXIDING LOWER LIMIT X")
+        } else {
+            this.angles.x = nextPosX
+        }
+
+        const nextPosZ = this.STARTING_CONST.Z + ( z / this.translationRatio )
+        if( nextPosZ > this.upperLimit ){
+            console.log("> EXIDING UPPER LIMIT Z")
+        } else if (nextPosZ < this.lowerLimit){
+            console.log("> EXIDING LOWER LIMIT Z")
+        } else {
+            this.angles.z = nextPosZ
+        }
+    }
+}
+
+class Gyroscope {
+    constructor(){
+        this.angles = {
+            x: 0,
+            y: 0,
+            z: 0,
+        }
+        this.tressholdRepo = []
+        this.tresshold = undefined
+        this.tressholdSmplSize = 200
+        this.tressholdMult = 2
+    }
+
+    updateG (x, y, z) {
+        if(this.tresshold === undefined){
+            this.setTresshold({x,y,z})
+        } else {
+            if(Math.abs(x) > this.tresshold.x) this.angles.x += x
+            if(Math.abs(y) > this.tresshold.y) this.angles.y += y * 5
+            if(Math.abs(z) > this.tresshold.z) this.angles.z += z
+        }
+    }
+
+    setTresshold (angles) {
+        if(this.tressholdRepo.length < this.tressholdSmplSize) {
+            this.tressholdRepo.push(angles)
+        } else if ( this.tressholdRepo.length === this.tressholdSmplSize ){
+            const tresshold = {x: 0, y: 0, z: 0}
+
+            this.tressholdRepo.forEach((a, i) => {
+                tresshold.x += Math.abs(a.x)
+                tresshold.y += Math.abs(a.y)
+                tresshold.z += Math.abs(a.z)
+                if(i === this.tressholdRepo.length - 1){
+                    this.tresshold = {}
+                    this.tressholdRepo = []
+                    this.tresshold.x = (tresshold.x / this.tressholdSmplSize) * this.tressholdMult
+                    this.tresshold.y = (tresshold.y / this.tressholdSmplSize) * this.tressholdMult
+                    this.tresshold.z = (tresshold.z / this.tressholdSmplSize) * this.tressholdMult
+                    console.log("tresshold set")
+                }
+            })
+        }
+    }
+}
+
+const gyro = new Gyroscope()
+const turret = new Turret()
+const devices = {}
 
 module.exports = (io) => {
 
     io.on("connection", (socket) => {
-        socket.on("purpose", (purpose) => console.log("> client: ", purpose))
+        socket.on("purpose", (purpose) => handleConnect(purpose, socket.id))
         
-        socket.on("giro", (giro)=> {
-            try {
-                const data = JSON.parse(giro)
-                io.emit("giro-output", data)
+        socket.on("gyro-raw-output", handleGyroComms)
 
-                if(gyroNoice.x === undefined) updateNoiceTresshold('x', data.Gx)
-                if(gyroNoice.y === undefined) updateNoiceTresshold('y', data.Gy)
-
-                if(Math.abs(data.Gx) > gyroNoice.x) gyroPos.x += (data.Gx / 100)
-                if(Math.abs(data.Gy) > gyroNoice.y) gyroPos.y += (data.Gy / 100)
-
-                if(gyroPos.x > 0.06 && gyroPos.x < 0.24) turretPos.x = gyroPos.x
-                if(gyroPos.y > 0.06 && gyroPos.y < 0.24) turretPos.y = gyroPos.y
-
-                // console.log(turretPos)
-
-                io.emit("turret-pos", turretPos)
-                io.emit("meta-data", gyroPos, gyroNoice)
-            } catch (err) {
-                if(err) console.error(err)
-                // fs.writeFileSync("./error/" + Date.now() + ".txt", JSON.stringify({giro, err}))
-            }
+        socket.on("mouse-pos", (data) => {
+            if(!devices.gyro) io.emit("canvas-pos", data)
         })
 
-        socket.on("disconnect", (reason) => console.log("> device disconnected: " + reason))
+        socket.on("disconnect", (reason) => handleDisconnect(reason, socket.id))
     });
 
+    function handleGyroComms ( gyroValues ) {
+        let gData = undefined;
+        try {
+            gData = JSON.parse( gyroValues )
+        } catch (err) {
+            console.error("> JSON PARSE ERROR ")
+            // console.error(err)
+        }
+    
+        if(gData !== undefined){
+            if(devices["gyro-display"]) io.to(devices["gyro-display"]).emit("raw-gyro-data", gData)
+            gyro.updateG(gData.Gx, gData.Gy, gData.Gz)
+            io.emit("gyro-state", gyro)
+
+            turret.changePos(gyro.angles)
+            io.emit("turret-pos", turret.angles)
+        }
+    }
 }
 
-function updateNoiceTresshold(axis, v) {
-    const value = Math.abs(v)
-    const noice = value * NOICE_MULTIPLIER
-    switch( axis ){
-        case "x":
-            gyroNoice.x = noice
-        break;
-        case "y":
-            gyroNoice.y = noice 
-        break;
-        case "z":
-            gyroNoice.z = noice * 2
-        break;
-    }
+function handleConnect(purpose, socketId) {
+    console.log("> DEVICE joined: ", purpose)
+    devices[purpose] = socketId
+}
+
+function handleDisconnect ( reason, socketId ) {
+    Object.entries(devices).forEach(([key, value]) => {
+      if(socketId === value){
+        delete devices[key]
+        console.log("> DEVICE: ", key, "disconnected, reason: ", reason)
+      }
+    })
 }
