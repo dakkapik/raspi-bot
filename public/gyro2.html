@@ -4,23 +4,11 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Giro</title>
-    <style>
-        html, body {
-            box-sizing: border-box;
-        }
-        canvas {
-            border-style: solid;
-        }
-    </style>
+    <title>gyro</title>
 </head>
 <body>
-    <h4 id="raw-input"></h4>
     <canvas></canvas>
-    <h1 id="x-axis"></h1>
-    <h1 id="y-axis"></h1>
-    <h1 id="z-axis"></h1>
-    <button id="reset">reset</button>
+    <button id="reset">Click</button>
 </body>
 <script src="/socket.io/socket.io.js"></script>
 <script>
@@ -36,22 +24,18 @@
     canvas.height = 600
     canvas.width = 600
     const c = canvas.getContext("2d")
-    const rawInput = document.getElementById("raw-input")
-    const xAxis = document.getElementById("x-axis")
-    const yAxis = document.getElementById("y-axis")
-    const zAxis = document.getElementById("z-axis")
 </script>
 <script>
     class Gage {
         constructor (name, index, fillColor = "black", tressholdColor = "red") {
-            this.visualMultiplier = 1
+            this.visualMultiplier = 0.01
             this.fColor = fillColor
             this.tColor = tressholdColor
             this.name = name
             this.value = 0
             this.tresshold = 0
-            this.width = 80
-            this.x = index * this.width
+            this.width = 40
+            this.x = index * 90 + 40
             this.y = canvas.width / 2
             this.font = "20px Arial"
         } 
@@ -62,27 +46,22 @@
             this.value = value * this.visualMultiplier
             this.drawGage()
             this.drawName()
-            this.drawTresshold()
         }
 
         drawGage () {
             c.fillStyle = this.fColor;
-            c.fillRect(this.x, this.y, this.width, this.value);
-        }
-
-        drawTresshold() {
-            c.strokeStyle = this.tColor;
             c.beginPath()
-            c.moveTo(this.x, this.y + this.tresshold * this.visualMultiplier)
-            c.lineTo(this.x  + this.width, this.y + this.tresshold * this.visualMultiplier)
-            c.moveTo(this.x,this.y - this.tresshold * this.visualMultiplier)
-            c.lineTo(this.x  + this.width, this.y +  this.tresshold * this.visualMultiplier)
+            if(Math.sign(this.value) > 0) {
+                c.ellipse(this.x, this.y, this.width, this.width, Math.PI /2, 0, this.value * Math.PI)
+            } else {
+                c.ellipse(this.x, this.y, this.width, this.width, Math.PI /2 , 0, this.value * Math.PI,true)
+            }
             c.stroke()
         }
 
         drawName() {
             c.font = this.font;
-            c.fillText(this.name, this.x, 20)
+            c.fillText(this.name + this.value.toString().slice(0,4), this.x, 20)
         }
     }
 </script>
