@@ -19,19 +19,22 @@ if(process.platform === 'win32') ip = ipGet()["Wi-Fi"][0]
 app.get("/", (req, res)=> {
     res.sendFile(__dirname + '/public/index.html')
 })
+
 app.get("/mouse-control", (req, res)=> {
     res.sendFile(__dirname + '/public/mouse-control.html')
 })
 app.get("/gyro", (req, res)=> {
-    res.sendFile(__dirname + '/public/gyro.html')
+    res.sendFile(__dirname + '/public/gyro2.html')
 })
 app.get("/turret-mock", (req, res)=> {
     res.sendFile(__dirname + '/public/turret-mock.html')
 })
 
+app.get("/noice-graph", (req, res) => {
+    res.sendFile(__dirname + '/public/noice-graph.html')
+})
 
-
-require("./socket")(io)
+require("./socket")(io, app)
 
 server.listen(port, ()=>{
     console.log('> listening on : http://' + ip + ":" + port);
