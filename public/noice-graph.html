@@ -6,11 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Noice graph</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://unpkg.com/mathjs@10.6.1/lib/browser/math.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
     <div id="noicePlotGraph" style="width:100%;max-width:700px"></div>
 </body>
-<!-- <script src="/socket.io/socket.io.js"></script>
 <script>
     const domain = (new URL(window.location.href));
     const socket = io(domain.origin);
@@ -18,9 +19,8 @@
     socket.on("connect", () => {
         socket.emit("purpose", "noice-graph")
     })
-</script> -->
+</script>
 <script>
-  
     class Ticker {
       constructor (name) {
 
@@ -29,19 +29,17 @@
           { x: [0], y: [0], mode: "lines", name, marker: {color: "#ff5959"}},
           { x: [0], y: [0], mode: "lines", name: "upper", marker: {color: "#4dfc3d"}},
           { x: [0], y: [0], mode: "lines", name:"lower",marker:{color: "#4dfc3d"}},
-          { x: [0], y: [0], mode: "lines", name: "average",marker: {color: "#000000"}},
+          // { x: [0], y: [0], mode: "lines", name: "average",marker: {color: "#000000"}},
         ]
-
-        this.iteration = 1
+        this.mean = 0
+        this.filterValue = 0
+        this.iteration = 0
+        this.diviationMultiplier = 2
         this.layout = {
           xaxis: {range: [0, this.iteration + 20], title: this.name},
           yaxis: {range: [-1, 1], title: "degrees per tenth of second"},
           title: "Noice Graph"
         }
-
-        this.average = 0;
-        this.max 
-        this.min  
       }
 
 
@@ -51,62 +49,43 @@
 
         this.data[0].x[this.iteration] = this.iteration
         this.data[0].y[this.iteration] = value
+        if(this.iteration === 100) this.calcFilter()
+        Gx.draw()
       }
 
-      calcNoice() {
-        
-        this.data[0].y.forEach(value => {
-          this.average += value
-        })
+      calcFilter () {
+        const yData = this.data[0].y
 
-        this.average = this.average / this.data[0].y.length
-        this.max = this.average
-        this.min = this.average
+        let sumTotal = 0;
 
-        this.data[0].y.forEach(value => {
-          if(this.max < value) this.max = value
-          else if(this.min > value) this.min = value
-        })
+        yData.forEach(value => sumTotal += value)
 
+        this.mean = sumTotal / yData.length
+        let standardDiv = 0
 
-        this.data[1].y[0] = this.max
-        this.data[1].y[1] = this.max
-        this.data[1].x[0] = 0
-        this.data[1].x[1] = this.iteration + 20
+        yData.forEach((value) => standardDiv += (value - this.mean)*(value -this.mean))
+       
+        standardDiv = Math.sqrt(standardDiv / (yData.length - 1))
 
-        this.data[2].y[0] = this.min
-        this.data[2].y[1] = this.min
-        this.data[2].x[0] = 0
-        this.data[2].x[1] = this.iteration + 20
-
-        this.data[3].y[0] = this.average
-        this.data[3].y[1] = this.average
-        this.data[3].x[0] = 0
-        this.data[3].x[1] = this.iteration + 20
-
-        this.draw()
+        this.filterValue = standardDiv * this.diviationMultiplier
       }
 
+     
       draw() {
         Plotly.newPlot("noicePlotGraph", this.data, this.layout)
+        this.data[1].x[this.iteration] = this.iteration
+        this.data[2].x[this.iteration] = this.iteration
+
+        this.data[1].y[this.iteration] = this.mean + this.filterValue
+        this.data[2].y[this.iteration] = this.mean - this.filterValue
       }
     }
     
     const Gx = new Ticker("Gx")
 
-    for (let i = 0; i < 500; i++){
-
-      const num = Math.random() * 0.1 
-
-      if(Math.random() < 0.5) {
-        Gx.tic( num  + 0.3)
-      } else {
-        Gx.tic( - num + 0.3)
-      }
-
-    }
-    // Gx.draw()
-    Gx.calcNoice()
-    console.log(Gx)
+    socket.on("raw-gyro-data", (data) => {
+      Gx.tic(data.Gx)
+      
+    })
     </script>
 </html>
