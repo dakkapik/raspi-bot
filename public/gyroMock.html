@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gyro-testing</title>
+    <style>
+        html, body {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <canvas></canvas>
+</body>
+<script>
+    const canvas = document.querySelector("canvas")
+    canvas.width = 800
+    canvas.height = 800
+    const c = canvas.getContext('2d')
+    let control = false;
+    let mousePos = {};
+
+    canvas.addEventListener("mousemove", (e) => {
+        const rect = canvas.getBoundingClientRect();
+        mousePos = {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
+        };
+    })
+
+    
+</script>
+<script>
+    class gyroMock {
+        constructor(x, y, r){
+            this.pos = {x, y}
+            this.radius = r;
+            this.angle = Math.PI;
+            this.fColor = "black";
+            this.mouseRel = {}
+            this.cRel = {
+                x: Math.cos(this.angle) * this.radius + this.pos.x,
+                y: Math.sin(this.angle) * this.radius + this.pos.y
+            };
+        }
+
+        updateValue = ( mouse ) => {
+
+            this.mouseRel.x = mouse.x - this.pos.x
+            this.mouseRel.y = mouse.y - this.pos.y
+
+            if(this.mouseRel.x >= 0) {
+                this.angle = Math.atan((this.mouseRel.y / this.mouseRel.x))
+            } else {
+                this.angle = Math.atan((this.mouseRel.y / this.mouseRel.x)) + Math.PI
+            }
+
+            this.cRel.x = Math.cos(this.angle) * this.radius + this.pos.x 
+            this.cRel.y = Math.sin(this.angle) * this.radius + this.pos.y
+
+            this.drawController()
+        }
+
+        drawController () {
+            c.font = '20px Arial'
+            c.fillStyle = this.fColor;
+
+            c.beginPath()
+            c.ellipse(this.pos.x, this.pos.y, this.radius, this.radius, 0, 0, 2 * Math.PI)
+            c.stroke()
+            c.beginPath()
+            c.moveTo(this.pos.x, this.pos.y)
+            c.lineTo(this.cRel.x, this.cRel.y)
+            c.stroke()
+            
+            // c.strokeText(this.angle * 180/Math.PI, this.pos.x - this.radius, this.pos.y - this.radius*1.1)
+            // c.strokeText(JSON.stringify(this.mouseRel), this.pos.x - this.radius, this.pos.y - this.radius*1.4)
+        }    
+    }
+</script>
+<script>
+    let selectedController = ""
+
+    const controllers = {
+        "X": new gyroMock(150, 200, 100),
+        "Z": new gyroMock(400, 200, 110)
+    }
+
+    canvas.addEventListener("click", () => {
+        let clickedInside = false;
+        Object.entries(controllers).forEach(([key, controller]) => {
+            if(
+                mousePos.x > controller.pos.x - controller.radius &&
+                mousePos.x < controller.pos.x + controller.radius &&
+                mousePos.y > controller.pos.y - controller.radius &&
+                mousePos.y < controller.pos.y + controller.radius    
+            ){
+                clickedInside = true
+                selectedController = key;
+            } 
+        })
+        if(clickedInside) control = !control
+    })
+
+    const animate = () => {
+        window.requestAnimationFrame(animate)
+        c.fillStyle = "white"
+        c.fillRect(0, 0, canvas.width, canvas.height)
+        
+        if(control) {
+            Object.keys(controllers).forEach(key => {
+                if(key == selectedController){
+                    controllers[selectedController].updateValue(mousePos)
+                } else {
+                    controllers[key].drawController()
+                }
+            })
+        } else {
+            Object.keys(controllers).forEach(key => {
+                controllers[key].drawController()
+            })
+        }
+
+    }
+    animate();
+</script>
+</html>
