@@ -23,18 +23,7 @@
 <script>
     class Ticker {
       constructor (name) {
-
-        this.name = name;
-        this.data = [
-          { x: [0], y: [0], mode: "lines", name, marker: {color: "#ff5959"}},
-          { x: [0], y: [0], mode: "lines", name: "upper", marker: {color: "#4dfc3d"}},
-          { x: [0], y: [0], mode: "lines", name:"lower",marker:{color: "#4dfc3d"}},
-          // { x: [0], y: [0], mode: "lines", name: "average",marker: {color: "#000000"}},
-        ]
-        this.mean = 0
-        this.filterValue = 0
-        this.iteration = 0
-        this.diviationMultiplier = 2
+        this.data = []
         this.layout = {
           xaxis: {range: [0, this.iteration + 20], title: this.name},
           yaxis: {range: [-1, 1], title: "degrees per tenth of second"},
@@ -42,50 +31,35 @@
         }
       }
 
+      addTicker(name) {
+        this.data.push({ x: [0], y: [0], mode: "lines", name, marker: {color: "#ff5959"}})
+      }
 
-      tic ( value ) {
+      tic ( pos, value ) {
         this.iteration ++
         this.layout.xaxis.range[1] = this.iteration + 20
 
-        this.data[0].x[this.iteration] = this.iteration
-        this.data[0].y[this.iteration] = value
-        if(this.iteration === 100) this.calcFilter()
-        Gx.draw()
+        this.data[pos].x[this.iteration] = this.iteration
+        this.data[pos].y[this.iteration] = value
+        
+        this.draw()
       }
 
-      calcFilter () {
-        const yData = this.data[0].y
-
-        let sumTotal = 0;
-
-        yData.forEach(value => sumTotal += value)
-
-        this.mean = sumTotal / yData.length
-        let standardDiv = 0
-
-        yData.forEach((value) => standardDiv += (value - this.mean)*(value -this.mean))
-       
-        standardDiv = Math.sqrt(standardDiv / (yData.length - 1))
-
-        this.filterValue = standardDiv * this.diviationMultiplier
-      }
-
-     
       draw() {
         Plotly.newPlot("noicePlotGraph", this.data, this.layout)
-        this.data[1].x[this.iteration] = this.iteration
-        this.data[2].x[this.iteration] = this.iteration
-
-        this.data[1].y[this.iteration] = this.mean + this.filterValue
-        this.data[2].y[this.iteration] = this.mean - this.filterValue
       }
     }
     
-    const Gx = new Ticker("Gx")
+    const ticker = new Ticker("Gx")
+
+    ticker.addTicker("Gx")
+    ticker.addTicker("Gy")
+    ticker.addTicker("Gz")
 
     socket.on("raw-gyro-data", (data) => {
-      Gx.tic(data.Gx)
-      
+      ticker.tic(0, data.Gx)
+      ticker.tic(1, data.Gy)
+      ticker.tic(2, data.Gz)
     })
     </script>
 </html>
