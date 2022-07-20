@@ -1,12 +1,8 @@
 const path = require("path");
 
 const { io } = require("socket.io-client")
-const { stdout, stderr } = require('node:process');
+const { stdin, stdout, stderr } = require('node:process');
 const { spawn } = require("child_process");
-
-const { Readable } = require("stream")
-
-
 
 const child = spawn('./a', [] , {
     stdio: ['pipe','pipe', stderr],
@@ -22,7 +18,7 @@ socket.on("connect",() => {
     socket.emit("purpose", "turret")
 })
 
-socket.on("canvas-pos", ( pos )=> {
-    const readable = Readable.from([pos])
-    readable.pipe(child.stdin)
+socket.on("canvas-pos", (pos) => {
+    child.stdin.write(pos + '\r\n')
 })
+

@@ -19,7 +19,7 @@ module.exports = (io, app) => {
         socket.on("gyro-raw-output", handleGyroComms)
 
         socket.on("mouse-pos", (data) => {
-            if(!devices.gyro) io.emit("canvas-pos", data)
+            if(!devices.gyro) io.emit("canvas-pos", JSON.stringify(data))
         })
 
         socket.on("disconnect", (reason) => handleDisconnect(reason, socket.id))
