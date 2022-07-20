@@ -4,6 +4,10 @@ const { io } = require("socket.io-client")
 const { stdout, stderr } = require('node:process');
 const { spawn } = require("child_process");
 
+const { Readable } = require("stream")
+
+
+
 const child = spawn('./a', [] , {
     stdio: ['pipe','pipe', stderr],
     cwd: path.resolve(path.join(__dirname,'src'))
@@ -19,5 +23,6 @@ socket.on("connect",() => {
 })
 
 socket.on("canvas-pos", ( pos )=> {
-    Buffer.from(pos).pipe(child.stdin)
+    const readable = Readable.from([pos])
+    readable.pipe(child.stdin)
 })
